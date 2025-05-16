@@ -1,11 +1,12 @@
 ﻿using Code.Scripts.Data;
+using Unity.Netcode;
 using UnityEngine;
 using VContainer;
 
 namespace Code.Scripts.Components
 {
     [RequireComponent(typeof(CharacterController))]
-    public class ThirdPersonController : MonoBehaviour
+    public class ThirdPersonController : NetworkBehaviour
     {
         [Header("Player")]
         [Tooltip("Move speed of the character in m/s")]
@@ -52,22 +53,6 @@ namespace Code.Scripts.Components
         [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
         public GameObject CinemachineCameraTarget;
 
-        [Tooltip("How far in degrees can you move the camera up")]
-        public float TopClamp = 70.0f;
-
-        [Tooltip("How far in degrees can you move the camera down")]
-        public float BottomClamp = -30.0f;
-
-        [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-        public float CameraAngleOverride = 0.0f;
-
-        [Tooltip("For locking the camera position on all axis")]
-        public bool LockCameraPosition = false;
-
-        // cinemachine
-        private float _cinemachineTargetYaw;
-        private float _cinemachineTargetPitch;
-
         // player
         private float _speed;
         private float _animationBlend;
@@ -89,15 +74,19 @@ namespace Code.Scripts.Components
 
         [SerializeField] private Animator _animator;
         [SerializeField] private CharacterController _controller;
+        
+        private PlayerCamera _playerCamera;
         private InputState _input;
         private GameObject _mainCamera;
-
-        private const float _threshold = 0.01f;
+        private bool _ready;
 
         [Inject]
-        private void Construct(InputState input)
+        private void Construct(InputState input, PlayerCamera playerCamera)
         {
+            Debug.LogWarning($"CONSTRUCT!!!");
+            _playerCamera = playerCamera;
             _input = input;
+            _ready = true;
         }
         
         private void Awake()
@@ -111,8 +100,10 @@ namespace Code.Scripts.Components
 
         private void Start()
         {
-            _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+            if (IsOwner)
+            {
+                _playerCamera.Attach(this);
+            }
             TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
 
@@ -125,14 +116,14 @@ namespace Code.Scripts.Components
 
         private void Update()
         {
+            if (!IsOwner || !_ready)
+            {
+                return;
+            }
+            
             JumpAndGravity();
             GroundedCheck();
             Move();
-        }
-
-        private void LateUpdate()
-        {
-            CameraRotation();
         }
 
         private void AssignAnimationIDs()
@@ -153,27 +144,6 @@ namespace Code.Scripts.Components
                 QueryTriggerInteraction.Ignore);
 
             _animator.SetBool(_animIDGrounded, Grounded);
-        }
-
-        private void CameraRotation()
-        {
-            // if there is an input and camera position is not fixed
-            if (_input.Look.sqrMagnitude >= _threshold && !LockCameraPosition)
-            {
-                //Don't multiply mouse input by Time.deltaTime;
-                var deltaTimeMultiplier = _input.IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-
-                _cinemachineTargetYaw += _input.Look.x * deltaTimeMultiplier;
-                _cinemachineTargetPitch += _input.Look.y * deltaTimeMultiplier;
-            }
-
-            // clamp our rotations so our values are limited 360 degrees
-            _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-            _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
-
-            // Cinemachine will follow this target
-            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
-                _cinemachineTargetYaw, 0.0f);
         }
 
         private void Move()
@@ -233,8 +203,10 @@ namespace Code.Scripts.Components
             var targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
             // move the player
-            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            var motion = targetDirection.normalized * (_speed * Time.deltaTime) +
+                         new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime;
+            _controller.Move(motion);
+            MoveRequestServerRpc(motion);
 
             
             _animator.SetFloat(_animIDSpeed, _animationBlend);
@@ -300,12 +272,22 @@ namespace Code.Scripts.Components
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
         }
-
-        private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+        
+        [ServerRpc]
+        private void MoveRequestServerRpc(Vector3 motion)
         {
-            if (lfAngle < -360f) lfAngle += 360f;
-            if (lfAngle > 360f) lfAngle -= 360f;
-            return Mathf.Clamp(lfAngle, lfMin, lfMax);
+            _controller.Move(motion);
+            // // Сервер проверяет движение (например, скорость не превышает лимит)
+            // if (velocity.magnitude <= moveSpeed * 1.1f) // +10% допустимая погрешность
+            // {
+            //     // Применяем движение на сервере (оно синхронизируется через NetworkTransform)
+            //     characterController.SimpleMove(velocity);
+            // }
+            // else
+            // {
+            //     Debug.LogWarning($"Player {OwnerClientId} пытается двигаться слишком быстро!");
+            //     // Можно принудительно телепортировать игрока или сбросить скорость
+            // }
         }
 
         private void OnDrawGizmosSelected()
