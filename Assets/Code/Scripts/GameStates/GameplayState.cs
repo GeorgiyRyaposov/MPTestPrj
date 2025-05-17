@@ -16,7 +16,7 @@ namespace Code.Scripts.GameStates
 
         public void Enter()
         {
-            _playerService.SpawnPlayer();
+            _playerService.Start();
             _inputService.EnablePlayerActions(true);
         }
 

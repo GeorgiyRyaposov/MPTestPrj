@@ -1,4 +1,5 @@
 ﻿using Code.Scripts.Data;
+using Code.Scripts.Services;
 using Unity.Netcode;
 using UnityEngine;
 using VContainer;
@@ -78,35 +79,42 @@ namespace Code.Scripts.Components
         private PlayerCamera _playerCamera;
         private InputState _input;
         private GameObject _mainCamera;
-        private bool _ready;
+        private bool _injected;
 
+        private void TriggerInjection()
+        {
+            if (!_injected)
+            {
+                NetworkItemsInjector.Inject(this);
+            }
+        }
+        
         [Inject]
         private void Construct(InputState input, PlayerCamera playerCamera)
         {
-            Debug.LogWarning($"CONSTRUCT!!!");
             _playerCamera = playerCamera;
             _input = input;
-            _ready = true;
+
+            _injected = true;
         }
-        
-        private void Awake()
+
+        protected override void OnNetworkPostSpawn()
         {
-            // get a reference to our main camera
-            if (_mainCamera == null)
+            TriggerInjection();
+                
+            if (IsOwner)
             {
-                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+                _playerCamera.Attach(this);
             }
         }
 
         private void Start()
         {
-            if (IsOwner)
+            if (!_mainCamera)
             {
-                _playerCamera.Attach(this);
+                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
-            TryGetComponent(out _animator);
-            _controller = GetComponent<CharacterController>();
-
+            
             AssignAnimationIDs();
 
             // reset our timeouts on start
@@ -116,7 +124,7 @@ namespace Code.Scripts.Components
 
         private void Update()
         {
-            if (!IsOwner || !_ready)
+            if (!IsOwner)
             {
                 return;
             }
@@ -206,7 +214,6 @@ namespace Code.Scripts.Components
             var motion = targetDirection.normalized * (_speed * Time.deltaTime) +
                          new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime;
             _controller.Move(motion);
-            MoveRequestServerRpc(motion);
 
             
             _animator.SetFloat(_animIDSpeed, _animationBlend);
@@ -273,23 +280,6 @@ namespace Code.Scripts.Components
             }
         }
         
-        [ServerRpc]
-        private void MoveRequestServerRpc(Vector3 motion)
-        {
-            _controller.Move(motion);
-            // // Сервер проверяет движение (например, скорость не превышает лимит)
-            // if (velocity.magnitude <= moveSpeed * 1.1f) // +10% допустимая погрешность
-            // {
-            //     // Применяем движение на сервере (оно синхронизируется через NetworkTransform)
-            //     characterController.SimpleMove(velocity);
-            // }
-            // else
-            // {
-            //     Debug.LogWarning($"Player {OwnerClientId} пытается двигаться слишком быстро!");
-            //     // Можно принудительно телепортировать игрока или сбросить скорость
-            // }
-        }
-
         private void OnDrawGizmosSelected()
         {
             var transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);

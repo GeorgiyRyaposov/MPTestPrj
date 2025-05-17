@@ -18,7 +18,9 @@ namespace Code.Scripts.Factories
 
         public ThirdPersonController Create()
         {
-            return _objectResolver.Instantiate(_playerPrefabs.Prefab);
+            var instance = _objectResolver.Instantiate(_playerPrefabs.Prefab);
+            _objectResolver.Inject(instance);
+            return instance;
         }
     }
 }
