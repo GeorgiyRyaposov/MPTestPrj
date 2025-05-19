@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Code.Scripts.Components;
 using Code.Scripts.Configs;
 using Code.Scripts.Factories;
+using Code.Scripts.GameStates;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -13,15 +14,17 @@ namespace Code.Scripts.Services
         private readonly NetworkManager _networkManager;
         private readonly PlayerFactory _playerFactory;
         private readonly BalanceConfig _balanceConfig;
+        private readonly IGameStateChanger _gameStateChanger;
         private readonly Dictionary<ulong, ThirdPersonController> _players = new();
         private bool _subscribedOnClientConnected;
 
         public PlayerService(NetworkManager networkManager, 
-            PlayerFactory playerFactory, BalanceConfig balanceConfig)
+            PlayerFactory playerFactory, BalanceConfig balanceConfig, IGameStateChanger gameStateChanger)
         {
             _networkManager = networkManager;
             _playerFactory = playerFactory;
             _balanceConfig = balanceConfig;
+            _gameStateChanger = gameStateChanger;
         }
         
         public void Start()
@@ -85,7 +88,12 @@ namespace Code.Scripts.Services
             }
             
             var health = player.GetComponent<Health>();
-            health.SetValue(health.HealthValue + delta);
+            health.SetValue(health.Value + delta);
+
+            if (health.Value <= 0)
+            {
+                _gameStateChanger.EnterGameOverState();
+            }
         }
         
         private void SubscribeOnClientConnected()

@@ -27,14 +27,16 @@ namespace Code.Scripts
             builder.RegisterInstance(_gameAssets.StageItems);
             builder.RegisterInstance(_balanceConfig);
 
-            builder.RegisterEntryPoint<GameStateMachine>().As<GameStateMachine>();
+            builder.RegisterEntryPoint<GameStateMachine>().As<IGameStateChanger>();
             builder.Register<StartMenuState>(Lifetime.Singleton);
             builder.Register<GameplayState>(Lifetime.Singleton);
+            builder.Register<GameOverState>(Lifetime.Singleton);
             
             builder.Register<InputService>(Lifetime.Singleton);
+            builder.Register<PlayerActionsListener>(Lifetime.Singleton);
+            
             builder.Register<InputState>(Lifetime.Singleton);
             builder.Register<ViewsState>(Lifetime.Singleton);
-            builder.Register<PlayerActionsListener>(Lifetime.Singleton);
             
             builder.Register<StageService>(Lifetime.Singleton);
             builder.Register<ItemsService>(Lifetime.Singleton);

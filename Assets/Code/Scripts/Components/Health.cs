@@ -11,7 +11,7 @@ namespace Code.Scripts.Components
         private readonly List<Action<int, int>> _callbacks = new ();
         private int _initialHealth;
 
-        public int HealthValue => _health.Value;
+        public int Value => _health.Value;
 
         public override void OnNetworkSpawn()
         {

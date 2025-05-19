@@ -18,15 +18,15 @@ namespace Code.Scripts.Views
         private bool IsVisible => _canvasGroup.alpha > 0;
         
         private NetworkManager _networkManager;
-        private GameStateMachine _stateMachine;
+        private IGameStateChanger _gameStateChanger;
         private ViewsState _viewsState;
 
         [Inject]
         private void Construct(NetworkManager networkManager,
-            GameStateMachine stateMachine, ViewsState viewsState)
+            IGameStateChanger gameStateChanger, ViewsState viewsState)
         {
             _networkManager = networkManager;
-            _stateMachine = stateMachine;
+            _gameStateChanger = gameStateChanger;
             _viewsState = viewsState;
         }
         
@@ -55,7 +55,7 @@ namespace Code.Scripts.Views
             }
         }
 
-        public void Show(bool show)
+        private void Show(bool show)
         {
             _canvasGroup.alpha = show ? 1 : 0;
             _canvasGroup.interactable = show;
@@ -66,7 +66,7 @@ namespace Code.Scripts.Views
         {
             if (_networkManager.StartHost())
             {
-                _stateMachine.EnterGameplayState();
+                _gameStateChanger.EnterGameplayState();
             }
         }
 
@@ -74,7 +74,7 @@ namespace Code.Scripts.Views
         {
             if (_networkManager.StartClient())
             {
-                _stateMachine.EnterGameplayState();
+                _gameStateChanger.EnterGameplayState();
             }
         }
         
