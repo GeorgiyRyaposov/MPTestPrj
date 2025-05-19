@@ -79,6 +79,7 @@ namespace Code.Scripts.Components
         private PlayerCamera _playerCamera;
         private InputState _input;
         private GameObject _mainCamera;
+        private PlayerService _playerService;
         private bool _injected;
 
         private void TriggerInjection()
@@ -90,10 +91,11 @@ namespace Code.Scripts.Components
         }
         
         [Inject]
-        private void Construct(InputState input, PlayerCamera playerCamera)
+        private void Construct(InputState input, PlayerCamera playerCamera, PlayerService playerService)
         {
             _playerCamera = playerCamera;
             _input = input;
+            _playerService = playerService;
 
             _injected = true;
         }
@@ -145,15 +147,28 @@ namespace Code.Scripts.Components
 
         private void GroundedCheck()
         {
+            var wasGrounded = Grounded;
+            
             // set sphere position, with offset
             var spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
                 transform.position.z);
             Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
                 QueryTriggerInteraction.Ignore);
 
+            if (!wasGrounded && Grounded)
+            {
+                TriggerOnGroundedServerRpc(NetworkManager.LocalClientId, _verticalVelocity);
+            }
+            
             _animator.SetBool(_animIDGrounded, Grounded);
         }
 
+        [ServerRpc]
+        private void TriggerOnGroundedServerRpc(ulong clientId, float verticalVelocity)
+        {
+            _playerService.OnGrounded(clientId, verticalVelocity);
+        }
+        
         private void Move()
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed

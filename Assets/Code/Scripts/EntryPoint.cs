@@ -17,12 +17,14 @@ namespace Code.Scripts
     {
         [SerializeField] private MainMenuPanel _mainMenuPanel;
         [SerializeField] private GameAssets _gameAssets;
+        [SerializeField] private BalanceConfig _balanceConfig;
         [SerializeField] private NetworkManager _networkManager;
         [SerializeField] private PlayerCamera _playerCamera;
         
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_gameAssets.PlayerPrefabs);
+            builder.RegisterInstance(_balanceConfig);
 
             builder.RegisterEntryPoint<GameStateMachine>().As<GameStateMachine>();
             builder.Register<StartMenuState>(Lifetime.Singleton);
