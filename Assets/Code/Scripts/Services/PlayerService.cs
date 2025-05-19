@@ -57,7 +57,6 @@ namespace Code.Scripts.Services
 
         public void OnGrounded(ulong clientId, float verticalVelocity)
         {
-            Debug.Log($"{_networkManager.IsServer} : OnGrounded: clientId :: {_networkManager.LocalClientId}");
             if (verticalVelocity < _balanceConfig.VelocityFallDamage)
             {
                 ApplyFallDamage(clientId);
@@ -66,16 +65,29 @@ namespace Code.Scripts.Services
 
         private void ApplyFallDamage(ulong clientId)
         {
-            if (!_players.ContainsKey(clientId))
+            AddHealthToPlayer(clientId, -_balanceConfig.FallDamageValue);
+        }
+
+        public void HealPlayer(ulong clientId)
+        {
+            if (_networkManager.IsServer)
             {
-                Debug.Log($"{_networkManager.IsServer}: not found player {clientId}, {string.Join(", ", _players.Keys)}");
+                AddHealthToPlayer(clientId, _balanceConfig.HealValue);
+            }
+        }
+        
+        private void AddHealthToPlayer(ulong clientId, int delta)
+        {
+            if (!_players.TryGetValue(clientId, out var player))
+            {
+                Debug.Log($"{_networkManager.IsServer}: not found player {clientId}, available {string.Join(", ", _players.Keys)}");
                 return;
             }
             
-            var health = _players[clientId].GetComponent<Health>();
-            health.SetValue(health.HealthValue - _balanceConfig.FallDamageValue);
+            var health = player.GetComponent<Health>();
+            health.SetValue(health.HealthValue + delta);
         }
-
+        
         private void SubscribeOnClientConnected()
         {
             if (_subscribedOnClientConnected)

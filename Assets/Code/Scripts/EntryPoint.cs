@@ -24,6 +24,7 @@ namespace Code.Scripts
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_gameAssets.PlayerPrefabs);
+            builder.RegisterInstance(_gameAssets.StageItems);
             builder.RegisterInstance(_balanceConfig);
 
             builder.RegisterEntryPoint<GameStateMachine>().As<GameStateMachine>();
@@ -35,8 +36,11 @@ namespace Code.Scripts
             builder.Register<ViewsState>(Lifetime.Singleton);
             builder.Register<PlayerActionsListener>(Lifetime.Singleton);
             
+            builder.Register<StageService>(Lifetime.Singleton);
+            builder.Register<ItemsService>(Lifetime.Singleton);
             builder.Register<PlayerService>(Lifetime.Singleton);
             builder.Register<PlayerFactory>(Lifetime.Singleton);
+            builder.Register<FirstAidKitFactory>(Lifetime.Singleton);
 
             builder.RegisterComponent(_networkManager);
             builder.RegisterComponent(_mainMenuPanel);

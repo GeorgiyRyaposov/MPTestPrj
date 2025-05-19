@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e66ed9997af945f182d570fe419e3532, type: 3}
+  m_Name: BalanceConfig
+  m_EditorClassIdentifier: 
+  InitialHealth: 100
+  VelocityFallDamage: -5
+  FallDamageValue: 35
+  HealValue: 50
+  GroundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  StageSize: 20
+  FirstAidKitCount: 20

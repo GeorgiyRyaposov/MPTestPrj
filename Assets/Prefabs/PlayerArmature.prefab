@@ -1038,7 +1038,7 @@ GameObject:
   - component: {fileID: 4416926081852918490}
   - component: {fileID: -319619865323782642}
   - component: {fileID: -3459044828921003312}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: PlayerArmature
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1175,9 +1175,8 @@ MonoBehaviour:
   GroundedRadius: 0.28
   GroundLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 8
   CinemachineCameraTarget: {fileID: 8338988566280778634}
-  _damageVelocity: 2
   _animator: {fileID: 6982812146204527121}
   _controller: {fileID: 4416926081852918491}
 --- !u!114 &-319619865323782642
@@ -2655,9 +2654,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3893294197879345259}
     m_Modifications:
+    - target: {fileID: 1105199725757065539, guid: 2e6d55dcc8922b446a8ab5d84aac744c, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3639117533342054248, guid: 2e6d55dcc8922b446a8ab5d84aac744c, type: 3}
       propertyPath: m_Name
       value: HealthBarCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 3639117533342054248, guid: 2e6d55dcc8922b446a8ab5d84aac744c, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7995441698306588638, guid: 2e6d55dcc8922b446a8ab5d84aac744c, type: 3}
       propertyPath: m_Pivot.x

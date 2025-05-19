@@ -7,11 +7,18 @@ namespace Code.Scripts.Configs
     public class GameAssets : ScriptableObject
     {
         public PlayerPrefabs PlayerPrefabs;
+        public StageItems StageItems;
     }
 
     [System.Serializable]
     public class PlayerPrefabs
     {
         public ThirdPersonController Prefab;
+    }
+    
+    [System.Serializable]
+    public class StageItems
+    {
+        public FirstAidKit FirstAidKitPrefab;
     }
 }

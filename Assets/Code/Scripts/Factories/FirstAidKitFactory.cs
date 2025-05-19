@@ -7,24 +7,24 @@ using VContainer.Unity;
 
 namespace Code.Scripts.Factories
 {
-    public class PlayerFactory
+    public class FirstAidKitFactory
     {
         private readonly IObjectResolver _objectResolver;
-        private readonly PlayerPrefabs _playerPrefabs;
+        private readonly StageItems _stageItems;
         private readonly StageService _stageService;
 
-        public PlayerFactory(IObjectResolver objectResolver, 
-            PlayerPrefabs playerPrefabs, StageService stageService)
+        public FirstAidKitFactory(IObjectResolver objectResolver, 
+            StageItems stageItems, StageService stageService)
         {
             _objectResolver = objectResolver;
-            _playerPrefabs = playerPrefabs;
+            _stageItems = stageItems;
             _stageService = stageService;
         }
-
-        public ThirdPersonController Create()
+        
+        public FirstAidKit Create()
         {
             var position = _stageService.GetRandomPosition();
-            var instance = _objectResolver.Instantiate(_playerPrefabs.Prefab, position, Quaternion.identity);
+            var instance = _objectResolver.Instantiate(_stageItems.FirstAidKitPrefab, position, Quaternion.identity);
             _objectResolver.Inject(instance);
             return instance;
         }
