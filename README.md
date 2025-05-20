@@ -4,6 +4,8 @@ VContainer
 UniRX  
 [Starter Assets - ThirdPerson](https://assetstore.unity.com/packages/essentials/starter-assets-thirdperson-updates-in-new-charactercontroller-pa-196526?srsltid=AfmBOoosJWzJOUYl_L2_TJSBfBAAyiZaMXuF_hmC_fQFwBMUG5tVRLfH)  
 
+Assets/Scenes/Playground.unity - сцена игры   
+
 [EntryPoint](Assets/Code/Scripts/EntryPoint.cs) - входная точка в проект  
 [GameStateMachine](Assets/Code/Scripts/GameStates/GameStateMachine.cs) - отвечает за переходы между состояниями стартового меню, игры, окном gameover, окном дисконекта
 
