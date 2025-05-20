@@ -1,10 +1,7 @@
-﻿using System;
-using Code.Scripts.Factories;
+﻿using Code.Scripts.Factories;
 using Code.Scripts.Messages;
-using Code.Scripts.Services;
 using UniRx;
 using Unity.Netcode;
-using UnityEngine;
 using VContainer;
 
 namespace Code.Scripts.Components

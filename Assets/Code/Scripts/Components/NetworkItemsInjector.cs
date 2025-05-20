@@ -1,8 +1,7 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using VContainer;
 
-namespace Code.Scripts.Services
+namespace Code.Scripts.Components
 {
     public class NetworkItemsInjector : MonoBehaviour
     {
