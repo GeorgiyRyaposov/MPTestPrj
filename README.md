@@ -23,3 +23,7 @@ UniRX
 [BalanceConfig](Assets/Code/Scripts/Configs/BalanceConfig.cs) - настройки силы падения, количества лечения и прочего  
 [GameAssets](Assets/Code/Scripts/Configs/GameAssets.cs) - ссылки на префабы  
 
+
+
+https://github.com/user-attachments/assets/f79c81d7-d088-4fa3-9f71-4d0cd6732960
+
