@@ -13,7 +13,7 @@ UniRX
 [InputService](Assets/Code/Scripts/Services/InputService.cs) - слушает ввод с устройства  
 
 [InputState](Assets/Code/Scripts/Data/InputState.cs) - текущее состояние нажатых кнопок  
-[ViewsState](Assets/Code/Scripts/Data/~~~~ViewsState.cs) - текущее состояние меню
+[ViewsState](Assets/Code/Scripts/Data/ViewsState.cs) - текущее состояние меню
 
 [FirstAidKit](Assets/Code/Scripts/Components/FirstAidKit.cs) - компонент с аптечкой  
 [Health](Assets/Code/Scripts/Components/Health.cs) - значение здоровья синхронизирующегося по сети  
