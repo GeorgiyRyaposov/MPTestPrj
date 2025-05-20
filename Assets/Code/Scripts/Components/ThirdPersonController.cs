@@ -174,7 +174,7 @@ namespace Code.Scripts.Components
         [ServerRpc]
         private void TriggerOnGroundedServerRpc(ulong clientId, float verticalVelocity)
         {
-            _playerService.OnCharacterGrounded(clientId, verticalVelocity);
+            _playerService.OnCharacterHitGround(clientId, verticalVelocity);
         }
         
         private void Move()

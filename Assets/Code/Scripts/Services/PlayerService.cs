@@ -6,16 +6,17 @@ using Code.Scripts.Messages;
 using UniRx;
 using Unity.Netcode;
 using UnityEngine;
-using VContainer.Unity;
 using Object = UnityEngine.Object;
 
 namespace Code.Scripts.Services
 {
-    public class PlayerService : IDisposable, IInitializable
+    public class PlayerService : IDisposable
     {
         private readonly NetworkManager _networkManager;
         private readonly BalanceConfig _balanceConfig;
         private readonly PlayerPrefabs _playerPrefabs;
+        
+        private PlayerSpawner _playerSpawner;
 
         public PlayerService(NetworkManager networkManager, 
             BalanceConfig balanceConfig, PlayerPrefabs playerPrefabs)
@@ -25,41 +26,49 @@ namespace Code.Scripts.Services
             _playerPrefabs = playerPrefabs;
         }
         
-        public void Initialize()
-        {
-            if (_networkManager.IsServer)
-            {
-                _networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
-            }
-
-            _networkManager.OnClientDisconnectCallback += OnClientDisconnect;
-        }
-        
         public void Start()
         {
             if (_networkManager.IsServer)
             {
-                var playerSpawner = Object.Instantiate(_playerPrefabs.PlayerSpawnerPrefab);
-                playerSpawner.NetworkObject.Spawn();
-                
+                _networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
                 _networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
+
+                if (!_playerSpawner)
+                {
+                    _playerSpawner = Object.Instantiate(_playerPrefabs.PlayerSpawnerPrefab);
+                    _playerSpawner.NetworkObject.Spawn();
+                }
             }
+            
+            _networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+            _networkManager.OnClientDisconnectCallback += OnClientDisconnect;
             
             MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = _networkManager.LocalClientId });
         }
-
-        private void OnClientConnectedCallback(ulong clientId)
+        
+        public void Dispose()
         {
-            MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = clientId });
+            Clear();
         }
 
-        public void Dispose()
+        public void Clear()
         {
             if (_networkManager)
             {
                 _networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
                 _networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             }
+
+            if (_playerSpawner)
+            {
+                _playerSpawner.DespawnSelf();
+                _playerSpawner = null;
+            }
+        }
+        
+        private void OnClientConnectedCallback(ulong clientId)
+        {
+            MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = clientId });
         }
 
         private void OnClientDisconnect(ulong clientId)
@@ -83,7 +92,7 @@ namespace Code.Scripts.Services
             }
         }
 
-        public void OnCharacterGrounded(ulong clientId, float verticalVelocity)
+        public void OnCharacterHitGround(ulong clientId, float verticalVelocity)
         {
             if (verticalVelocity < _balanceConfig.VelocityFallDamage)
             {
@@ -118,6 +127,12 @@ namespace Code.Scripts.Services
         
         private bool TryGetPlayerObject(ulong clientId, out NetworkObject playerObject)
         {
+            if (!_networkManager || _networkManager.SpawnManager == null)
+            {
+                playerObject = null;
+                return false;
+            }
+            
             playerObject = _networkManager.SpawnManager.PlayerObjects.FirstOrDefault(x => x.OwnerClientId == clientId);
             return playerObject != null;
         }

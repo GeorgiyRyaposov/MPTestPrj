@@ -31,7 +31,7 @@ namespace Code.Scripts.Components
             TriggerInjection();
         }
 
-        public void SpawnPlayer(ulong clientId)
+        private void SpawnPlayer(ulong clientId)
         {
             SpawnForClientServerRpc(clientId);
         }
@@ -39,7 +39,6 @@ namespace Code.Scripts.Components
         [ServerRpc(RequireOwnership = false)]
         private void SpawnForClientServerRpc(ulong clientId)
         {
-            //Debug.Log($"{NetworkManager.IsServer} : Spawning player {clientId}");
             var controller = _playerFactory.Create();
             controller.NetworkObject.SpawnAsPlayerObject(clientId);
         }
@@ -50,6 +49,17 @@ namespace Code.Scripts.Components
             {
                 NetworkItemsInjector.Inject(this);
             }
+        }
+
+        public void DespawnSelf()
+        {
+            DespawnForClientServerRpc();
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        private void DespawnForClientServerRpc()
+        {
+            NetworkObject.Despawn();
         }
     }
 }

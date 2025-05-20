@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace Code.Scripts.Components
 {
@@ -19,6 +20,10 @@ namespace Code.Scripts.Components
             if (playerObject)
             {
                 playerObject.Despawn();
+            }
+            else
+            {
+                Debug.LogError($"Failed to despawn player {clientId}");
             }
         }
     }

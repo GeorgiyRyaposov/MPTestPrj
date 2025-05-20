@@ -41,7 +41,7 @@ namespace Code.Scripts
             
             builder.Register<StageService>(Lifetime.Singleton);
             builder.Register<ItemsService>(Lifetime.Singleton);
-            builder.Register<IInitializable, PlayerService>(Lifetime.Singleton).As<PlayerService>();
+            builder.Register<PlayerService>(Lifetime.Singleton).AsImplementedInterfaces().As<PlayerService>();
             builder.Register<PlayerFactory>(Lifetime.Singleton);
             builder.Register<FirstAidKitFactory>(Lifetime.Singleton);
 
