@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerPrefabs:
     Prefab: {fileID: 4416926081852918490, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+    PlayerSpawnerPrefab: {fileID: 6127559894246619056, guid: e0e66919a9bb6ed4391bb5424eb55379, type: 3}
   StageItems:
     FirstAidKitPrefab: {fileID: 3107641172164454843, guid: ad5f18b09ff8b2848b2bc91968eed868, type: 3}

@@ -46,6 +46,11 @@ namespace Code.Scripts.Components
             
             _attached = true;
         }
+
+        public void Detach()
+        {
+            _attached = false;
+        }
         
         private void LateUpdate()
         {

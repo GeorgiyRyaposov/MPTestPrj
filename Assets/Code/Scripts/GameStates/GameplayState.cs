@@ -25,6 +25,7 @@ namespace Code.Scripts.GameStates
 
         public void Exit()
         {
+            _playerService.DespawnPlayer();
             _inputService.EnablePlayerActions(false);
             _itemsService.ClearItems();
         }

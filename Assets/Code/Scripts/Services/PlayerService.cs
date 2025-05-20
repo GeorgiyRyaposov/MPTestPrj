@@ -1,64 +1,90 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using Code.Scripts.Components;
 using Code.Scripts.Configs;
-using Code.Scripts.Factories;
-using Code.Scripts.GameStates;
+using Code.Scripts.Messages;
+using UniRx;
 using Unity.Netcode;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Code.Scripts.Services
 {
     public class PlayerService : IDisposable
     {
         private readonly NetworkManager _networkManager;
-        private readonly PlayerFactory _playerFactory;
         private readonly BalanceConfig _balanceConfig;
-        private readonly IGameStateChanger _gameStateChanger;
-        private readonly Dictionary<ulong, ThirdPersonController> _players = new();
-        private bool _subscribedOnClientConnected;
+        private readonly PlayerPrefabs _playerPrefabs;
+        private bool _initialized;
 
         public PlayerService(NetworkManager networkManager, 
-            PlayerFactory playerFactory, BalanceConfig balanceConfig, IGameStateChanger gameStateChanger)
+            BalanceConfig balanceConfig, PlayerPrefabs playerPrefabs)
         {
             _networkManager = networkManager;
-            _playerFactory = playerFactory;
             _balanceConfig = balanceConfig;
-            _gameStateChanger = gameStateChanger;
+            _playerPrefabs = playerPrefabs;
         }
         
         public void Start()
         {
+            Initialize();
+            
+            MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = _networkManager.LocalClientId });
+        }
+
+        private void Initialize()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+            
             if (_networkManager.IsServer)
             {
-                SpawnPlayer(_networkManager.LocalClientId);
-                SubscribeOnClientConnected();
+                var playerSpawner = Object.Instantiate(_playerPrefabs.PlayerSpawnerPrefab);
+                playerSpawner.NetworkObject.Spawn();
+                
+                _networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
             }
+
+            _networkManager.OnClientDisconnectCallback += OnClientDisconnect;
+
+            _initialized = true;
+        }
+
+        private void OnClientConnectedCallback(ulong clientId)
+        {
+            MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = clientId });
         }
 
         public void Dispose()
         {
             if (_networkManager)
             {
-                _networkManager.OnClientConnectedCallback -= SpawnPlayer;
+                _networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
+                _networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             }
-        }
-        
-        private void SpawnPlayer(ulong clientId)
-        {
-            Debug.Log($"{_networkManager.IsServer} : Spawning player {clientId}");
-            var controller = _playerFactory.Create();
-            if (_networkManager.IsServer)
-            {
-                controller.GetComponent<Health>().SetInitialValue(_balanceConfig.InitialHealth);
-            }
-            
-            controller.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-            
-            _players[clientId] = controller;
         }
 
-        public void OnGrounded(ulong clientId, float verticalVelocity)
+        private void OnClientDisconnect(ulong clientId)
+        {
+            MessageBroker.Default.Publish(new ServerStoppedMessage());
+        }
+        
+        public void DespawnPlayer()
+        {
+            var clientId = _networkManager.LocalClientId;
+            if (TryGetPlayerObject(clientId, out var playerObject))
+            {
+                playerObject.GetComponent<PlayerDespawner>().Despawn(clientId);
+            }
+            else
+            {
+                Debug.LogError($"[DespawnPlayer] Failed to find player {clientId}");
+            }
+        }
+
+        public void OnCharacterGrounded(ulong clientId, float verticalVelocity)
         {
             if (verticalVelocity < _balanceConfig.VelocityFallDamage)
             {
@@ -81,30 +107,20 @@ namespace Code.Scripts.Services
         
         private void AddHealthToPlayer(ulong clientId, int delta)
         {
-            if (!_players.TryGetValue(clientId, out var player))
+            if (!TryGetPlayerObject(clientId, out var player))
             {
-                Debug.Log($"{_networkManager.IsServer}: not found player {clientId}, available {string.Join(", ", _players.Keys)}");
+                Debug.Log($"{_networkManager.IsServer}: not found player {clientId}");
                 return;
             }
             
             var health = player.GetComponent<Health>();
             health.SetValue(health.Value + delta);
-
-            if (health.Value <= 0)
-            {
-                _gameStateChanger.EnterGameOverState();
-            }
         }
         
-        private void SubscribeOnClientConnected()
+        private bool TryGetPlayerObject(ulong clientId, out NetworkObject playerObject)
         {
-            if (_subscribedOnClientConnected)
-            {
-                return;
-            }
-            
-            _networkManager.OnClientConnectedCallback += SpawnPlayer;
-            _subscribedOnClientConnected = true;
+            playerObject = _networkManager.SpawnManager.PlayerObjects.FirstOrDefault(x => x.OwnerClientId == clientId);
+            return playerObject != null;
         }
     }
 }

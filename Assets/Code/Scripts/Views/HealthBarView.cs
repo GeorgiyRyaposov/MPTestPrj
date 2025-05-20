@@ -15,11 +15,12 @@ namespace Code.Scripts.Views
 
         private void Start()
         {
-            var camera = Camera.main;
-            _canvas.worldCamera = camera;
-            _cameraRoot = camera.transform;
+            var main = Camera.main;
+            _canvas.worldCamera = main;
+            _cameraRoot = main.transform;
             
             _health.SubscribeOnValueChanged(OnHealthChanged);
+            SetHealthValue(_health.Value);
         }
 
         private void OnDestroy()
@@ -37,7 +38,12 @@ namespace Code.Scripts.Views
 
         private void OnHealthChanged(int previousValue, int newValue)
         {
-            _healthBarLabel.text = $"HP: {newValue}";
+            SetHealthValue(newValue);
+        }
+
+        private void SetHealthValue(int value)
+        {
+            _healthBarLabel.text = $"HP: {value}";
         }
 
         private void Update()

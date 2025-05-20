@@ -31,6 +31,7 @@ namespace Code.Scripts
             builder.Register<StartMenuState>(Lifetime.Singleton);
             builder.Register<GameplayState>(Lifetime.Singleton);
             builder.Register<GameOverState>(Lifetime.Singleton);
+            builder.Register<DisconnectedState>(Lifetime.Singleton);
             
             builder.Register<InputService>(Lifetime.Singleton);
             builder.Register<PlayerActionsListener>(Lifetime.Singleton);

@@ -3,23 +3,23 @@ using Code.Scripts.Data;
 
 namespace Code.Scripts.GameStates
 {
-    public class GameOverState : IState
+    public class DisconnectedState : IState
     {
         private readonly ViewsState _viewsState;
 
-        public GameOverState(ViewsState viewsState)
+        public DisconnectedState(ViewsState viewsState)
         {
             _viewsState = viewsState;
         }
 
         public void Enter()
         {
-            _viewsState.IsGameOverVisible.Value = true;
+            _viewsState.IsDisconnectedPanelVisible.Value = true;
         }
 
         public void Exit()
         {
-            _viewsState.IsGameOverVisible.Value = false;
+            _viewsState.IsDisconnectedPanelVisible.Value = false;
         }
     }
 }

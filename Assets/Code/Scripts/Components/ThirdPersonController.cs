@@ -110,6 +110,12 @@ namespace Code.Scripts.Components
             }
         }
 
+        public override void OnNetworkDespawn()
+        {
+            _playerCamera.Detach();
+            base.OnNetworkDespawn();
+        }
+
         private void Start()
         {
             if (!_mainCamera)
@@ -123,6 +129,8 @@ namespace Code.Scripts.Components
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
         }
+        
+        
 
         private void Update()
         {
@@ -166,7 +174,7 @@ namespace Code.Scripts.Components
         [ServerRpc]
         private void TriggerOnGroundedServerRpc(ulong clientId, float verticalVelocity)
         {
-            _playerService.OnGrounded(clientId, verticalVelocity);
+            _playerService.OnCharacterGrounded(clientId, verticalVelocity);
         }
         
         private void Move()

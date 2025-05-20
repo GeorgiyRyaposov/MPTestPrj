@@ -1,7 +1,9 @@
-﻿using Code.Scripts.Services;
+﻿using System;
+using Code.Scripts.Services;
 using Unity.Netcode;
 using UnityEngine;
 using VContainer;
+using Random = UnityEngine.Random;
 
 namespace Code.Scripts.Components
 {
@@ -22,9 +24,13 @@ namespace Code.Scripts.Components
             _injected = true;
         }
 
+        private void Start()
+        {
+            _angle = Random.Range(-_rotationSpeed, _rotationSpeed);
+        }
+
         private void Update()
         {
-            _angle += Time.deltaTime * _rotationSpeed;
             _mesh.Rotate(Vector3.up, _angle, Space.World);
         }
 
@@ -51,12 +57,12 @@ namespace Code.Scripts.Components
             if (other.CompareTag("Player"))
             {
                 var playerNetworkObject = other.GetComponent<NetworkObject>();
-                OnPlayerEnterServerRpc(playerNetworkObject.OwnerClientId, NetworkObjectId);
+                OnPlayerEnterServerRpc(playerNetworkObject.OwnerClientId);
             }
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void OnPlayerEnterServerRpc(ulong clientId, ulong objectId)
+        private void OnPlayerEnterServerRpc(ulong clientId)
         {
             _playerService.HealPlayer(clientId);
             NetworkObject.Despawn();

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Code.Scripts.Messages;
+using UniRx;
 using Unity.Netcode;
 
 namespace Code.Scripts.Components
@@ -47,6 +49,11 @@ namespace Code.Scripts.Components
             for (int i = 0; i < _callbacks.Count; i++)
             {
                 _callbacks[i](previousValue, newValue);
+            }
+
+            if (newValue <= 0 && IsOwner)
+            {
+                MessageBroker.Default.Publish(new GameOverMessage());
             }
         }
     }

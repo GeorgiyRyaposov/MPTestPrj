@@ -1,5 +1,6 @@
 ﻿using Code.Scripts.Common.StateMachines;
-using Code.Scripts.Data;
+using Code.Scripts.Messages;
+using UniRx;
 using VContainer.Unity;
 
 namespace Code.Scripts.GameStates
@@ -8,7 +9,6 @@ namespace Code.Scripts.GameStates
     {
         void EnterGameplayState();
         void EnterStartMenuState();
-        void EnterGameOverState();
     }
     
     public class GameStateMachine : IGameStateChanger, IStartable, ITickable
@@ -16,18 +16,24 @@ namespace Code.Scripts.GameStates
         private readonly StartMenuState _startMenuState;
         private readonly GameplayState _gameplayState;
         private readonly GameOverState _gameOverState;
+        private readonly DisconnectedState _disconnectedState;
         private readonly StateMachine _stateMachine = new();
 
         public GameStateMachine(StartMenuState startMenuState, 
-            GameplayState gameplayState, GameOverState gameOverState)
+            GameplayState gameplayState, GameOverState gameOverState, 
+            DisconnectedState disconnectedState)
         {
             _startMenuState = startMenuState;
             _gameplayState = gameplayState;
             _gameOverState = gameOverState;
+            _disconnectedState = disconnectedState;
         }
 
         public void Start()
         {
+            MessageBroker.Default.Receive<GameOverMessage>().Subscribe(_ => EnterGameOverState());
+            MessageBroker.Default.Receive<ServerStoppedMessage>().Subscribe(_ => EnterDisconnectedState());
+            
             _stateMachine.SetInitialState(_startMenuState);
         }
 
@@ -46,9 +52,14 @@ namespace Code.Scripts.GameStates
             _stateMachine.Enter(_startMenuState);
         }
 
-        public void EnterGameOverState()
+        private void EnterGameOverState()
         {
             _stateMachine.Enter(_gameOverState);
+        }
+        
+        private void EnterDisconnectedState()
+        {
+            _stateMachine.Enter(_disconnectedState);
         }
     }
 }

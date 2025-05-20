@@ -1,6 +1,7 @@
 ﻿using System;
 using Code.Scripts.Data;
 using Code.Scripts.GameStates;
+using UniRx;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,27 +33,11 @@ namespace Code.Scripts.Views
         
         private void Start()
         {
-            _viewsState.StateChanged += OnViewsChanged;
+            _viewsState.IsMainMenuVisible.Subscribe(Show).AddTo(gameObject);
             
             _hostButton.onClick.AddListener(OnHostButtonClicked);
             _clientButton.onClick.AddListener(OnClientButtonClicked);
             _quitButton.onClick.AddListener(OnQuitButtonClicked);
-        }
-
-        private void OnDestroy()
-        {
-            if (_viewsState != null)
-            {
-                _viewsState.StateChanged -= OnViewsChanged;
-            }
-        }
-
-        private void OnViewsChanged()
-        {
-            if (IsVisible != _viewsState.IsMainMenuVisible)
-            {
-                Show(_viewsState.IsMainMenuVisible);
-            }
         }
 
         private void Show(bool show)

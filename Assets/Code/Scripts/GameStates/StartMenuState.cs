@@ -14,12 +14,12 @@ namespace Code.Scripts.GameStates
 
         public void Enter()
         {
-            _viewsState.IsMainMenuVisible = true;
+            _viewsState.IsMainMenuVisible.Value = true;
         }
 
         public void Exit()
         {
-            _viewsState.IsMainMenuVisible = false;
+            _viewsState.IsMainMenuVisible.Value = false;
         }
     }
 }

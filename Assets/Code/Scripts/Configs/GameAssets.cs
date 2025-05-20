@@ -14,6 +14,7 @@ namespace Code.Scripts.Configs
     public class PlayerPrefabs
     {
         public ThirdPersonController Prefab;
+        public PlayerSpawner PlayerSpawnerPrefab;
     }
     
     [System.Serializable]
