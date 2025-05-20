@@ -45,7 +45,7 @@ namespace Code.Scripts.Services
             
             foreach (var aidKit in _aidKits)
             {
-                if (aidKit)
+                if (aidKit && aidKit.NetworkObject)
                 {
                     aidKit.NetworkObject.Despawn();
                 }
