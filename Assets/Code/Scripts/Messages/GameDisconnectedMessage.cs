@@ -1,6 +1,6 @@
 ﻿namespace Code.Scripts.Messages
 {
-    public class ServerStoppedMessage
+    public class GameDisconnectedMessage
     {
         
     }

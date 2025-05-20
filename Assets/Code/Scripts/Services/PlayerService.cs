@@ -6,16 +6,16 @@ using Code.Scripts.Messages;
 using UniRx;
 using Unity.Netcode;
 using UnityEngine;
+using VContainer.Unity;
 using Object = UnityEngine.Object;
 
 namespace Code.Scripts.Services
 {
-    public class PlayerService : IDisposable
+    public class PlayerService : IDisposable, IInitializable
     {
         private readonly NetworkManager _networkManager;
         private readonly BalanceConfig _balanceConfig;
         private readonly PlayerPrefabs _playerPrefabs;
-        private bool _initialized;
 
         public PlayerService(NetworkManager networkManager, 
             BalanceConfig balanceConfig, PlayerPrefabs playerPrefabs)
@@ -25,20 +25,18 @@ namespace Code.Scripts.Services
             _playerPrefabs = playerPrefabs;
         }
         
+        public void Initialize()
+        {
+            if (_networkManager.IsServer)
+            {
+                _networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
+            }
+
+            _networkManager.OnClientDisconnectCallback += OnClientDisconnect;
+        }
+        
         public void Start()
         {
-            Initialize();
-            
-            MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = _networkManager.LocalClientId });
-        }
-
-        private void Initialize()
-        {
-            if (_initialized)
-            {
-                return;
-            }
-            
             if (_networkManager.IsServer)
             {
                 var playerSpawner = Object.Instantiate(_playerPrefabs.PlayerSpawnerPrefab);
@@ -46,10 +44,8 @@ namespace Code.Scripts.Services
                 
                 _networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
             }
-
-            _networkManager.OnClientDisconnectCallback += OnClientDisconnect;
-
-            _initialized = true;
+            
+            MessageBroker.Default.Publish(new SpawnPlayerMessage { ClientId = _networkManager.LocalClientId });
         }
 
         private void OnClientConnectedCallback(ulong clientId)
@@ -68,7 +64,10 @@ namespace Code.Scripts.Services
 
         private void OnClientDisconnect(ulong clientId)
         {
-            MessageBroker.Default.Publish(new ServerStoppedMessage());
+            if (_networkManager.LocalClientId == clientId)
+            {
+                MessageBroker.Default.Publish(new GameDisconnectedMessage());
+            }
         }
         
         public void DespawnPlayer()

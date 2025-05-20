@@ -32,7 +32,7 @@ namespace Code.Scripts.GameStates
         public void Start()
         {
             MessageBroker.Default.Receive<GameOverMessage>().Subscribe(_ => EnterGameOverState());
-            MessageBroker.Default.Receive<ServerStoppedMessage>().Subscribe(_ => EnterDisconnectedState());
+            MessageBroker.Default.Receive<GameDisconnectedMessage>().Subscribe(_ => EnterDisconnectedState());
             
             _stateMachine.SetInitialState(_startMenuState);
         }
